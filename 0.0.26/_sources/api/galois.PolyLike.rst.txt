@@ -1,0 +1,6 @@
+﻿galois.PolyLike
+===============
+
+.. currentmodule:: galois
+
+.. autodata:: PolyLike

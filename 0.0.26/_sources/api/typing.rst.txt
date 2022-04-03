@@ -1,0 +1,26 @@
+Typing
+======
+
+This section contains type hints specific to the :obj:`galois` librayr.
+
+.. currentmodule:: galois
+
+Array type hints
+----------------
+
+.. rubric::
+.. autosummary::
+   :toctree:
+
+   ElementLike
+   ArrayLike
+
+Polynomial type hints
+---------------------
+
+.. rubric::
+.. autosummary::
+   :toctree:
+
+   CoeffsLike
+   PolyLike

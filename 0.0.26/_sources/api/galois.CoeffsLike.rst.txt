@@ -1,0 +1,6 @@
+﻿galois.CoeffsLike
+=================
+
+.. currentmodule:: galois
+
+.. autodata:: CoeffsLike

@@ -1,0 +1,143 @@
+Linear Sequences
+================
+
+This tutorial discusses the basics of linear sequences over finite fields.
+
+.. Linear recurrent sequences
+.. --------------------------
+
+.. First, we will define some terms. A *sequence* :math:`y` over :math:`\mathrm{GF}(p^m)` is a tuple of elements from
+.. :math:`\mathrm{GF}(p^m)`.
+
+.. Linear recurrence
+.. .................
+
+.. A *linear recurrent sequence* :math:`y` is defined by the *recurrence relation*
+
+.. .. math::
+..    y_t = c_{n-1}y_{t-1} + c_{n-2}y_{t-2} + \dots + c_{1}y_{t-n+2} + c_{0}y_{t-n+1} .
+
+.. A *k-th order* recurrence relationship is a sequence determined by a linear combination of :math:`k` previous
+.. outputs.
+
+.. .. admonition:: Fibonacci sequence
+..    :class: example
+
+..    The canonical example of a linear recurrence is the Fibonacci sequence :math:`\{1, 1, 2, 3, 5, 8, 13, 21, \dots\}`.
+..    The Fibonacci sequence is a second-order recurrence with recurrence relationship :math:`y_t = y_{t-1} + y_{t-2}`.
+
+.. The linear recurrence described can be visualized in this way, where each square represents a memory element (e.g., a shift
+.. register). The "state" of the linear recurrence is the vector :math:`S`, and :math:`S_0 = y_{t-1}`, :math:`S_1 = y_{t-2}`, etc.
+
+.. .. code-block:: text
+..    :caption: Linear recurrence of y[t]
+
+..    y[t] <--+--------------+<-------------+<-------------+<-------------+
+..            |              ^              ^              ^              |
+..            |              | c_n-1        | c_n-2        | c_1          | c_0
+..            |  +--------+  |  +--------+  |              |  +--------+  |
+..            +->|  S[0]  |--+->|  S[1]  |--+---  ...   ---+->| S[n-1] |--+
+..               +--------+     +--------+                    +--------+
+..                 y[t-1]         y[t-2]                       y[t-n+1]
+
+.. Characteristic polynomial
+.. .........................
+
+.. An important property of a linear recurrent sequence is its characteristic polynomial.
+.. The linear recurrent sequence defined by the linear recurrence
+
+.. .. math::
+..    y_t = c_{n-1}y_{t-1} + c_{n-2}y_{t-2} + \dots + c_{1}y_{t-n+2} + c_{0}y_{t-n+1}
+
+.. is said to have *characteristic polynomial* :math:`c(x)` of degree :math:`n`
+
+.. .. math::
+..    c(x) = x^{n} - c_{n-1}x^{n-1} - c_{n-2}x^{n-2} - \dots - c_{1}x - c_{0} .
+
+.. The following sequence is an :math:`n`-th order recurrence.
+
+.. .. admonition:: Fibonacci sequence
+..    :class: example
+
+..    The Fibonacci sequence has characteristic polynomial :math:`c(x) = x^2 - x - 1`.
+
+.. Using the :obj:`galois` library, let's create a linear recurrent sequence from its characteristic polynomial. Often characteristic polynomials
+.. are irreducible -- we will explain why later -- but for now, let's create a degree-:math:`4` polynomial over :math:`\mathrm{GF}(7)`.
+
+.. .. ipython:: python
+
+..    c_poly = galois.primitive_poly(7, 4); c_poly
+
+.. The linear recurrent sequence object is created as follows. The "state" (or previous outputs) are set to all ones.
+
+.. .. ipython:: python
+
+..    lrs = galois.LRS(c_poly); lrs
+..    lrs.state
+..    lrs.characteristic_poly
+
+.. Next, generate the first ten outputs of the sequence.
+
+.. .. ipython:: python
+
+..    y = lrs.step(10); y
+
+.. Let's extract the :math:`\{c_0, c_1, \dots, c_{n-2}, c_{n-1}\}` values from :math:`c(x)`.
+
+.. .. ipython:: python
+
+..    c = -c_poly.coeffs[1:][::-1]; c
+
+.. We can see, for instance, that :math:`y_5` is defined from its previous outputs according to the recurrence relationship.
+
+.. .. ipython:: python
+
+..    t = 5
+..    y[t]
+..    c[3]*y[t-1] + c[2]*y[t-2] + c[1]*y[t-3] + c[0]*y[t-4]
+
+.. Minimal polynomial
+.. ..................
+
+.. Berlekamp-Massey algorithm
+.. ..........................
+
+.. Fibonacci LFSR
+.. --------------
+
+.. Below we overlay the output markers `y_lrs[t]` for the linear recurrence and `y_fib[t]` for the Fibonacci LFSR.
+
+.. .. code-block:: text
+..    :caption: LRS and Fibonacci LFSR equivalence
+
+..     y_lrs[t] <--+--------------+<-------------+<-------------+<-------------+
+..    y_fib[t+n]   |              ^              ^              ^              |
+..                 |              | c_n-1        | c_n-2        | c_1          | c_0
+..                 |  +--------+  |  +--------+  |              |  +--------+  |
+..                 +->|  S[0]  |--+->|  S[1]  |--+---  ...   ---+->| S[n-1] |--+--> y_lrs[t-n]
+..                    +--------+     +--------+                    +--------+        y_fib[t]
+..                    y_lrs[t-1]     y_lrs[t-2]                   y_lrs[t-n+1]
+..                   y_fib[t+n-1]   y_fib[t+n-2]                   y_fib[t+1]
+
+.. We can see that the output of the linear recurrence leads the output of the Fibonacci LFSR by exactly :math:`n`
+.. steps.
+
+.. .. .. ipython:: python
+
+.. ..    c_poly = galois.primitive_poly(7, 4); c_poly
+.. ..    lrs = galois.LRS(c_poly); lrs
+.. ..    y_lrs = lrs.step(16); y_lrs
+
+.. .. .. ipython:: python
+
+.. ..    flfsr = galois.FLFSR.Characteristic(c_poly); flfsr
+.. ..    y_fib = flfsr.step(16); y_fib
+
+.. .. .. ipython:: python
+
+.. ..    n = lrs.order
+.. ..    y_lrs[:-n]
+.. ..    y_fib[n:]
+
+.. Galois LFSR
+.. -----------
